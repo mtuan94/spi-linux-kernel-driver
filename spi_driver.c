@@ -378,6 +378,7 @@ static struct kobj_attribute gpio19state_attribute = __ATTR(gpio19state, 0664, s
 static struct kobj_attribute gpio21state_attribute = __ATTR(gpio21state, 0664, spikernmodex_gpio21state_show, NULL);
 
 // a group of attributes so that we can create and destroy them all at once
+//GROUP TẤT CẢ LẠI ĐỂ KHỞI TẠO VỚI XÓA CÙNG 1 LÚC
 static struct attribute *attrs[] = {
 	&store_attribute.attr,
 	&somereg_attribute.attr,
@@ -422,6 +423,17 @@ static int spikernmodex_probe(struct spi_device *spi)
 	int err;
 
 	printk(KERN_DEBUG "spikernmodex_probe() called.\n");
+	//////////////////////////////////////////////////////////////////////////////
+	///TẠO RA KOBJECT BÊN TRONG /SYS/KERNEL/ ///////////////////////////////////////
+	/*
+		 * Create a simple kobject with the name of "spikernmodex",
+		 * located under /sys/kernel/
+		 *
+		 * As this is a simple directory, no uevent will be sent to
+		 * userspace.  That is why this function should not be used for
+		 * any type of dynamic kobjects, where the name and number are
+		 * not known ahead of time.
+		 */
 
 	spikernmodex_kobj = kobject_create_and_add("spikernmodex", kernel_kobj);
 	if (!spikernmodex_kobj) {
@@ -437,6 +449,7 @@ static int spikernmodex_probe(struct spi_device *spi)
 		return -ENOMEM;
 	}
 
+	printk(KERN_ERR "sysfs files created ! \n");
 	// initalizing SPI interface
 	myspi = spi;
 	myspi->max_speed_hz = 5000000; // get this from your SPI device's datasheet
@@ -495,7 +508,7 @@ static int spikernmodex_remove(struct spi_device *spi)
 // this gets called on module init
 static int __init spikernmodex_init(void)
 {
-	int error;
+	int error = spikernmodex_probe(myspi);
 	printk(KERN_INFO "Loading linux kernel SPI driver ...\n");
 	// registering SPI driver, this will call spikernmodex_probe()
 	error = spi_register_driver(&spikernmodex_driver);
@@ -503,6 +516,7 @@ static int __init spikernmodex_init(void)
 		printk(KERN_ERR "spi_register_driver() failed %d\n", error);
 		return error;
 	}
+	printk(KERN_INFO "Linux kernel SPI driver successfully loaded !!\n");
 	return 0;
 }
 
