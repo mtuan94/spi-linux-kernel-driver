@@ -3,6 +3,7 @@ cmd_/home/pi/spi-linux-kernel-driver/spi_driver.o := gcc -Wp,-MD,/home/pi/spi-li
 source_/home/pi/spi-linux-kernel-driver/spi_driver.o := /home/pi/spi-linux-kernel-driver/spi_driver.c
 
 deps_/home/pi/spi-linux-kernel-driver/spi_driver.o := \
+    $(wildcard include/config/hotplug.h) \
   include/linux/init.h \
     $(wildcard include/config/broken/rodata.h) \
     $(wildcard include/config/lto.h) \

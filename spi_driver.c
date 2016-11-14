@@ -16,6 +16,17 @@
 #include <linux/sched.h>
 #include <linux/spinlock.h>
 
+#ifndef __devinit
+#define __devinit
+#define __devinitdata
+#endif
+
+#if defined(MODULE) || defined(CONFIG_HOTPLUG)
+#define __devexit_p(x) x
+#else
+#define __devexit_p(x) NULL
+#endif
+
 // example SPI device registers
 #define SOMEKINDOFRESETCOMMAND 0
 #define SOMEREG 0
@@ -398,7 +409,7 @@ static struct attribute *attrs[] = {
 
 static struct attribute_group attr_group = { .attrs = attrs };
 
-static int spikernmodex_probe(struct spi_device *spi); // prototype
+static int __devinit spikernmodex_probe(struct spi_device *spi); // prototype
 static int spikernmodex_remove(struct spi_device *spi); // prototype
 
 /// SPI DRIVER STRUCTURE
@@ -408,7 +419,7 @@ static struct spi_driver spikernmodex_driver = {
 		.owner = THIS_MODULE
 	},
 	.probe = spikernmodex_probe,
-  .remove = spikernmodex_remove
+  .remove = __devexit_p(spikernmodex_remove)
 };
 
 // Probe SPI device
@@ -418,7 +429,7 @@ static struct spi_driver spikernmodex_driver = {
 
 // This probe function starts the per-device initialization: initializing hardware, allocating resources, and registering the device with the kernel as a block or network device or whatever it is.
 // tóm lại là gọi để init hardware, phân bố cái resoures và đăng ký device file
-static int spikernmodex_probe(struct spi_device *spi)
+static int __devinit spikernmodex_probe(struct spi_device *spi)
 {
 	int err;
 
@@ -508,7 +519,7 @@ static int spikernmodex_remove(struct spi_device *spi)
 // this gets called on module init
 static int __init spikernmodex_init(void)
 {
-	int error = spikernmodex_probe(myspi);
+	int error;
 	printk(KERN_INFO "Loading linux kernel SPI driver ...\n");
 	// registering SPI driver, this will call spikernmodex_probe()
 	error = spi_register_driver(&spikernmodex_driver);
